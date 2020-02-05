@@ -12,6 +12,7 @@ mongoose.connect('mongodb://localhost:27017/graphql', {
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
   type Query {
+    getUser(_id: ID!): User,
     getUsers: [User],
     getAddresses: [Address],
     hello: String,
@@ -45,6 +46,9 @@ const typeDefs = gql`
 // resolvers are used to retreive data
 const resolvers = {
     Query: {
+        async getUser(parent, args, context, info) {
+            return await User.findOne({ _id: args._id }).populate("address");
+        },
         async getUsers() {
             return await User.find({}).populate("address")
         },
