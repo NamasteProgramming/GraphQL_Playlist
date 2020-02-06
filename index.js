@@ -11,6 +11,11 @@ mongoose.connect('mongodb://localhost:27017/graphql', {
 
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
+  type Mutation {
+    addUser(name: String!, email: String!): User!
+    updateUser(_id: ID!, email: String!): User!
+  }
+
   type Query {
     getUser(_id: ID!): User,
     getUsers: [User],
@@ -21,16 +26,16 @@ const typeDefs = gql`
   }
 
   type User {
-    _id: String,
-    name: String,
-    email: String,
+    _id: String!,
+    name: String!,
+    email: String!,
     address: Address
   },
 
   type Address {
-    _id: String,
-    city: String,
-    country: String,
+    _id: String!,
+    city: String!,
+    country: String!,
     user: User
   }
 
@@ -71,6 +76,21 @@ const resolvers = {
             }
         }
     },
+
+    Mutation: {
+        async addUser(parent, args, context, info) {
+            const user = new User({
+                name: args.name,
+                email: args.email
+            })
+            await user.save()
+            return user
+        },
+
+        async updateUser(parent, args) {
+            return User.findOneAndUpdate({ _id: args._id }, { email: args.email }, { new: true })
+        }
+    }
 };
 
 const server = new ApolloServer({ typeDefs, resolvers });
